@@ -1,8 +1,7 @@
-# management/commands/populate_employees.py
-
 from django.core.management.base import BaseCommand
 from faker import Faker
 from ecs.models import Employee
+import phonenumbers
 
 class Command(BaseCommand):
     help = 'Populate employees in the database'
@@ -13,9 +12,10 @@ class Command(BaseCommand):
             name = fake.name()
             age = fake.random_int(min=18, max=65)
             phone = fake.phone_number()
+
+            # Parse and format the phone number using phonenumbers
+            parsed_phone = phonenumbers.parse(phone, "KE")  # Assuming numbers are US numbers
+            formatted_phone = phonenumbers.format_number(parsed_phone, phonenumbers.PhoneNumberFormat.E164)
+
             email = fake.email()
-            # Manually append the country code for Kenya (+254)
-            phone_ke = "+254" + phone[1:]  # Remove the leading zero from the generated phone number
-            
-            # Add other fields as needed
-            Employee.objects.create(name=name, age=age, phone = phone_ke, email=email)
+            Employee.objects.create(name=name, age=age, phone=formatted_phone, email=email)
